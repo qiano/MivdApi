@@ -1,10 +1,11 @@
 package main
 
 import (
-	"encoding/base64"
+	// "encoding/base64"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/sessions"
+	"github.com/qshuai162/MivdApi/account"
 	"github.com/qshuai162/MivdApi/common/util"
 	ana "github.com/qshuai162/MivdApi/imganalyze"
 	"github.com/qshuai162/MivdApi/record"
@@ -12,7 +13,7 @@ import (
 	"image"
 	"image/draw"
 	"io"
-	"io/ioutil"
+	// "io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -167,8 +168,24 @@ func main() {
 		c.JSON(200, gin.H{"code": 0, "data": r})
 	})
 
-	r.Run(":8765")
+	r.POST("/account/login", func(c *gin.Context) {
+		username := c.PostForm("username")
+		password := c.PostForm("password")
+		session, err := mgo.Dial(mongodbstr)
+		if err != nil {
+			panic(err)
+		}
+		session.SetMode(mgo.Monotonic, true)
+		defer session.Close()
+		ac := account.Login(session, username, password)
+		if ac.UserName != "" {
+			c.JSON(200, gin.H{"code": 0, "data": ac})
+		} else {
+			c.JSON(200, gin.H{"code": 1, "data": "user name or password error"})
+		}
+	})
 
+	r.Run(":8765")
 }
 
 func getSavePath() string {
