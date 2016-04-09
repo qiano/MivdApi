@@ -1,41 +1,86 @@
 package record
 
 import (
+	// . "github.com/qshuai162/MivdApi/common/config"
+	// "fmt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"strconv"
 )
 
 type Record struct {
-	Id        string //编号
-	Time      int64  //时间
+	Id        int    //编号
+	Type      string //类型
+	Date      int64  //时间
 	PicData   string //照片base64
 	AreaData  string //反应区图片base64
-	Test      string //测试项目
-	Judgement string //判定
+	Project   string //测试项目
+	ResultMsg string //判定
 	LotNo     string //批号
-	Operator  string //操作员
+	UserName  string //操作员
 	Location  string //地点
 	Remark    string //备注
 }
 
-var dbName = "mivd"
+// var mongodbstr = Config["mongodbHost"]
+// var dbName = Config["mongodbDbName"]
+
+var mongodbstr = "121.41.46.25:27017"
+var dbName = "mivd_dev"
 var collectionName = "record"
 
-func (r *Record) Save(session *mgo.Session) {
-	session.DB(dbName).C(collectionName).Insert(r)
+func (r *Record) Save() {
+	session, err := mgo.Dial(mongodbstr)
+	if err != nil {
+		panic(err)
+	}
+	session.SetMode(mgo.Monotonic, true)
+	defer session.Close()
+
+	col := session.DB(dbName).C(collectionName)
+	var temp Record
+	col.Find(nil).Sort("-$natural").One(&temp)
+	r.Id = temp.Id + 1
+	col.Insert(r)
 }
 
-func GetList(session *mgo.Session, pageIdx, pageSize int) (records []Record) {
-	session.DB(dbName).C(collectionName).Find(nil).Skip((pageIdx - 1) * pageSize).Limit(pageSize).All(records)
+func GetList(pageIdx, pageSize int, user, role string) (records []Record) {
+	session, err := mgo.Dial(mongodbstr)
+	if err != nil {
+		panic(err)
+	}
+	session.SetMode(mgo.Monotonic, true)
+	defer session.Close()
+
+	col := session.DB(dbName).C(collectionName)
+	if role != "user" {
+		col.Find(nil).Sort("-$natural").Skip((pageIdx - 1) * pageSize).Limit(pageSize).All(&records)
+	} else {
+		col.Find(bson.M{"operator": user}).Sort("-$natural").Skip((pageIdx - 1) * pageSize).Limit(pageSize).All(&records)
+	}
+
 	return
 }
 
-func FindById(session *mgo.Session, id string) (record Record) {
-	session.DB(dbName).C(collectionName).Find(bson.M{"Id": id}).One(record)
+func FindById(id string) (record Record) {
+	session, err := mgo.Dial(mongodbstr)
+	if err != nil {
+		panic(err)
+	}
+	session.SetMode(mgo.Monotonic, true)
+	defer session.Close()
+	ID, _ := strconv.Atoi(id)
+	session.DB(dbName).C(collectionName).Find(bson.M{"id": ID}).One(&record)
 	return
 }
 
-func FindByOid(session *mgo.Session, oid string) (record Record) {
+func FindByOid(oid string) (record Record) {
+	session, err := mgo.Dial(mongodbstr)
+	if err != nil {
+		panic(err)
+	}
+	session.SetMode(mgo.Monotonic, true)
+	defer session.Close()
 	session.DB(dbName).C(collectionName).FindId(oid)
 	return
 }

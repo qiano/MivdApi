@@ -1,6 +1,8 @@
 package imganalyze
 
 import (
+	"bytes"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"image"
@@ -84,4 +86,19 @@ func ImgCut(img *image.Image, x0, y0, x1, y1 int) image.Image {
 	rect := image.Rect(x0, y0, x1, y1)
 	subimg := gray.SubImage(rect)
 	return subimg
+}
+
+func Base64ToImg(data string) *image.Image {
+	ddd, _ := base64.StdEncoding.DecodeString(data) //成图片文件并把文件写入到buffer
+	bbb := bytes.NewBuffer(ddd)
+	img, _, _ := image.Decode(bbb)
+	return &img
+}
+
+func ImgToBase64(img *image.Image) string {
+	emptyBuff := bytes.NewBuffer(nil)                  //开辟一个新的空buff
+	jpeg.Encode(emptyBuff, *img, nil)                  //img写入到buff
+	dist := make([]byte, 50000)                        //开辟存储空间
+	base64.StdEncoding.Encode(dist, emptyBuff.Bytes()) //buff转成base64
+	return string(dist)
 }
