@@ -1,7 +1,7 @@
 package record
 
 import (
-	// . "github.com/qshuai162/MivdApi/common/config"
+	. "github.com/qshuai162/MivdApi/common/config"
 	// "fmt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -22,11 +22,11 @@ type Record struct {
 	Remark    string //备注
 }
 
-// var mongodbstr = Config["mongodbHost"]
-// var dbName = Config["mongodbDbName"]
+var mongodbstr = Config["mongodbHost"]
+var dbName = Config["mongodbDbName"]
 
-var mongodbstr = "121.41.46.25:27017"
-var dbName = "mivd_dev"
+// var mongodbstr = "121.41.46.25:27017"
+// var dbName = "mivd_dev"
 var collectionName = "record"
 
 func (r *Record) Save() {
@@ -44,7 +44,7 @@ func (r *Record) Save() {
 	col.Insert(r)
 }
 
-func GetList(pageIdx, pageSize int, user, role string) (records []Record) {
+func GetList(pageIdx, pageSize int, user, role,ty string) (records []Record) {
 	session, err := mgo.Dial(mongodbstr)
 	if err != nil {
 		panic(err)
@@ -54,9 +54,9 @@ func GetList(pageIdx, pageSize int, user, role string) (records []Record) {
 
 	col := session.DB(dbName).C(collectionName)
 	if role != "user" {
-		col.Find(nil).Sort("-$natural").Skip((pageIdx - 1) * pageSize).Limit(pageSize).All(&records)
+		col.Find(bson.M{"type":ty}).Sort("-$natural").Skip((pageIdx - 1) * pageSize).Limit(pageSize).All(&records)
 	} else {
-		col.Find(bson.M{"operator": user}).Sort("-$natural").Skip((pageIdx - 1) * pageSize).Limit(pageSize).All(&records)
+		col.Find(bson.M{"operator": user,"type":ty}).Sort("-$natural").Skip((pageIdx - 1) * pageSize).Limit(pageSize).All(&records)
 	}
 
 	return

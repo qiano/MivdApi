@@ -1,18 +1,24 @@
 package main
 
 import (
-	// "encoding/base64"
+	"encoding/base64"
 	"fmt"
+	"image"
+	"image/draw"
+	"io"
+	"io/ioutil"
+	"image/jpeg"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/sessions"
 	"github.com/qshuai162/MivdApi/account"
 	. "github.com/qshuai162/MivdApi/common/config"
 	"github.com/qshuai162/MivdApi/common/util"
 	ana "github.com/qshuai162/MivdApi/imganalyze"
+	"github.com/qshuai162/MivdApi/ivd/ph"
+	"github.com/qshuai162/MivdApi/ivd/autionsticks"
 	"github.com/qshuai162/MivdApi/record"
-	"image"
-	"image/draw"
-	"io"
+
 	// "io/ioutil"
 	"os"
 	"path/filepath"
@@ -113,10 +119,11 @@ func main() {
 		c.JSON(200, gin.H{"datas": arr, "all": arr2, "path": "../webapi/" + path}) // {data:ret[0]}}).String(200, "webapi/"+path)
 	})
 
-	r.GET("/record/list/:page", func(c *gin.Context) {
+	r.GET("/record/list/:type/:page", func(c *gin.Context) {
 		page := c.Param("page")
 		user := c.Param("user")
 		role := c.Param("role")
+		ty:=c.Param("type")
 
 		idx, err := strconv.Atoi(page)
 		if err != nil {
@@ -124,7 +131,7 @@ func main() {
 			return
 		}
 
-		rs := record.GetList(idx, 20, user, role)
+		rs := record.GetList(idx, 20, user, role,ty)
 		for i := 0; i < len(rs); i++ {
 			rs[i].PicData = ""
 		}
@@ -152,35 +159,53 @@ func main() {
 	r.POST("/upload/:type", func(c *gin.Context) {
 		imgbase := c.PostForm("image")
 		user := c.PostForm("user")
-
-		img := ana.Base64ToImg(imgbase)
-		area := ana.ImgCut(img, 0, (*img).Bounds().Max.Y*8/17.0, (*img).Bounds().Max.X, (*img).Bounds().Max.Y*9/17.0)
-		ph := ana.TestPH(img)
-		re := new(record.Record)
-		re.Type = "ph"
-		re.Project = "PH"
-		re.ResultMsg = strconv.Itoa(ph)
-		re.Location = "shanghai"
-		re.UserName = user
-		re.PicData = imgbase
-		re.AreaData = ana.ImgToBase64(&area)
-		re.LotNo = strconv.Itoa(time.Now().Year()) + time.Now().Month().String()
-		re.Date = time.Now().Unix()
-
-		re.Save()
-
-		c.JSON(200, gin.H{"code": 0, "data": re.Id, "msg": ""})
+		Type := c.Param("type")
+		switch Type {
+		case "ph":
+			picpath:=getSavePath("ph")
+			ddd, _ := base64.StdEncoding.DecodeString(imgbase) //成图片文件并把文件写入到buffer
+			ioutil.WriteFile(picpath, ddd, 0666) 
+		
+			img := ana.Base64ToImg(imgbase)
+    		area := ana.ImgCut(img, 0, (*img).Bounds().Max.Y*8/17.0, (*img).Bounds().Max.X, (*img).Bounds().Max.Y*9/17.0)
+			areapath:=getSavePath("ph")
+			f, _ := os.Create(areapath)     //创建文件
+			defer f.Close()                   //关闭文件
+			jpeg.Encode(f, area, nil)
+			re:=ph.Do(picpath,areapath,user)
+			re.Save()
+			c.JSON(200, gin.H{"code": 0, "data": re.Id, "msg": ""})
+			break
+		case "autionsticks":
+			picpath:=getSavePath("autionsticks")
+			ddd, _ := base64.StdEncoding.DecodeString(imgbase) //成图片文件并把文件写入到buffer
+			ioutil.WriteFile(picpath, ddd, 0666) 
+		
+			img := ana.Base64ToImg(imgbase)
+    		area := ana.ImgCut(img, (*img).Bounds().Max.X/8 , 0, (*img).Bounds().Max.X*2/8, (*img).Bounds().Max.Y)
+			areapath:=getSavePath("autionsticks")
+			f, _ := os.Create(areapath)     //创建文件
+			defer f.Close()                   //关闭文件
+			jpeg.Encode(f, area, nil)
+		
+			re:=autionsticks.Do(picpath,areapath,user)
+			re.Save()
+			c.JSON(200, gin.H{"code": 0, "data": re.Id, "msg": ""})
+			break	
+		default:
+			c.JSON(200, gin.H{"code": 1, "data":nil, "msg": "not surpport"})
+		}
 	})
 
 	r.Run(":" + Config["port"])
 }
 
-func getSavePath() string {
+func getSavePath(flag string) string {
 	basedir := util.GetCurrDir()
-	savedir := basedir + "images/temp/"
+	savedir := basedir + "images/"+flag+"/"
 	if !util.IsExistFileOrDir(savedir) {
 		os.MkdirAll(savedir, 0777) //创建文件夹
 	}
-	savepath := savedir + fmt.Sprintf("%d", time.Now().Unix()) + ".jpg"
+	savepath := savedir + fmt.Sprintf("%d", time.Now().UnixNano()) + ".jpg"
 	return savepath
 }

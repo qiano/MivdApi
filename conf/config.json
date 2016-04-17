@@ -1,0 +1,5 @@
+{
+	"port":"8765",
+	"mongodbHost":"121.41.46.25:27017",
+	"mongodbDbName":"mivd_dev"
+}
