@@ -70,9 +70,13 @@ function fileSelected1() {
       function uploadFile1() {
         var fd = new FormData();
         fd.append("fileToUpload1", document.getElementById('fileToUpload1').files[0]);
+        fd.append("x", document.getElementById('x').value);
+        fd.append("y", document.getElementById('y').value);
+        fd.append("w", document.getElementById('w').value);
+        fd.append("h", document.getElementById('h').value);
         var xhr = new XMLHttpRequest();
         xhr.addEventListener("load", uploadComplete1, false);
-        xhr.open("POST", "http://localhost:8888/getline");//修改成自己的接口
+        xhr.open("POST", "http://localhost:8765/getline");//修改成自己的接口
         xhr.send(fd);
       }
 function uploadComplete1(evt) {
@@ -85,11 +89,12 @@ function uploadComplete1(evt) {
           arr.push(i)
           details=ret.all[i-1].split(",")
           str+="<tr style='margin-bottom:3px;width:300px;height:20px;'><td style='width:30px;'>"+i+"</td> <td>"+ret.datas[i-1]+"</td><td style='width:30px;'></td>";
-          for(var j=0;j<details.length;j++){
-            str+="<td style='width:30px;'>"+details[j]+"</td>";
-          }
+          // for(var j=0;j<details.length;j++){
+          //   str+="<td style='width:30px;'>"+details[j]+"</td>";
+          // }
           str+="</tr>";
         }
+        document.getElementById('subimg').src="data:image/jpg;base64,"+ret.sub
        var data = {
       labels : arr,
       datasets : [
@@ -133,6 +138,12 @@ document.getElementById("details").innerHTML=str;
 <div>
    <form id="form2" enctype="multipart/form-data" method="post" >
     <div class="row">
+      <div>
+        X:<input type="number" name="x" id="x" />
+        Y:<input type="number" name="y" id="y" />
+        W:<input type="number" name="w" id="w" />
+        H:<input type="number" name="h" id="h" />
+      </div>
       <label for="fileToUpload">CT线图片上传</label><br />
       <input type="file" name="fileToUpload" id="fileToUpload1" onchange="fileSelected1();"/>
     </div>
@@ -142,6 +153,7 @@ document.getElementById("details").innerHTML=str;
     <div class="row">
       <input type="button" onclick="uploadFile1()" value="Upload" />
     </div>
+    <img id="subimg" />
     <div id="progressNumber"></div>
   </form>
   <div style="width:3000px;">

@@ -2,7 +2,7 @@ package ph
 
 
 import(
-    
+    "fmt"
 	"github.com/qshuai162/MivdApi/imganalyze"
     "github.com/qshuai162/MivdApi/record"
     "strconv"
@@ -17,7 +17,7 @@ func Do(picpath,areapath,user string ) *record.Record{
     re := new(record.Record)
     re.Type = "ph"
     re.Project ="ph"
-    re.ResultMsg = strconv.Itoa(ph)
+    re.ResultMsg =fmt.Sprintf("%.1f",ph)
     re.Location = "shanghai"
     re.UserName = user
     re.PicData = picpath

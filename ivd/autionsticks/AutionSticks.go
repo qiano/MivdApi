@@ -27,7 +27,7 @@ func test(img *image.Image, x, y []float64, width, length int) []string {
 	testResult = append(testResult, "蛋白质："+ dbz[rbgDisMaxAution(phMATRIX[1])])
 	
 	ndy:=[]string{"normal","Default","1+（2）mg/dL","2+（4）mg/dL","3+（8）mg/dL","4+（OVER）mg/dL","Default"}
-	testResult = append(testResult, "尿胆元："+ ndy[rbgDisMaxAution(phMATRIX[2])])
+	testResult = append(testResult, "尿胆原："+ ndy[rbgDisMaxAution(phMATRIX[2])])
 
 	dhs:=[]string{"neg.","Default","1+（0.5）mg/dL","2+（2）mg/dL","3+（6）mg/dL","4+（OVER）mg/dL", "Default"}
 	testResult = append(testResult, "胆红素："+ dhs[rbgDisMaxAution(phMATRIX[3])])

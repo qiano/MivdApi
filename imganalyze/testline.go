@@ -100,7 +100,7 @@ func ConvertoLine(gray *image.Gray) *[]float64 {
 	for y := 0; y < maxy; y++ {
 		xsum := 0
 		for x := 0; x < maxx; x++ {
-			xsum += int(gray.GrayAt(x, y).Y)
+			xsum += int(gray.Pix[maxx*y+x])
 		}
 		arr = append(arr, float64(xsum)/float64(maxx))
 	}

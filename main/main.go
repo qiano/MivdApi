@@ -11,9 +11,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/sessions"
-	"github.com/qshuai162/MivdApi/account"
-	. "github.com/qshuai162/MivdApi/common/config"
-	"github.com/qshuai162/MivdApi/common/util"
+	"github.com/qshuai162/account"
+	. "github.com/qshuai162/common/config"
+	"github.com/qshuai162/common/util"
 	ana "github.com/qshuai162/MivdApi/imganalyze"
 	"github.com/qshuai162/MivdApi/ivd/ph"
 	"github.com/qshuai162/MivdApi/ivd/autionsticks"
@@ -24,6 +24,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
+	"math"
 )
 
 var store = sessions.NewCookieStore([]byte("something"))
@@ -77,6 +78,10 @@ func main() {
 
 	r.POST("/getline", func(c *gin.Context) {
 		file, head, err := c.Request.FormFile("fileToUpload1")
+		x,_:=strconv.ParseFloat(c.PostForm("x"),64)
+		y,_:=strconv.ParseFloat(c.PostForm("y"),64)
+		w,_:=strconv.ParseFloat(c.PostForm("w"),64)
+		h,_:=strconv.ParseFloat(c.PostForm("h"),64)
 		if err != nil {
 			return
 		}
@@ -89,7 +94,6 @@ func main() {
 		savepath := savedir + head.Filename
 		fw, err := os.Create(savepath)
 		io.Copy(fw, file)
-		fmt.Println(err)
 		if err != nil {
 			return
 		}
@@ -98,33 +102,36 @@ func main() {
 		if img == nil {
 			fmt.Println("解码失败")
 		}
-
-		gray := image.NewGray((*img).Bounds())
-		draw.Draw(gray, gray.Bounds(), *img, (*img).Bounds().Min, draw.Src) //原始图片转换为灰色图片
-
+		mx:=float64((*img).Bounds().Max.X)
+		my:=float64((*img).Bounds().Max.Y)
+		subimg := ana.ImgCut(img, int(math.Ceil(mx*x)), int(math.Ceil(my*y)), int(math.Floor(mx*(x+w))),int(math.Floor(my*(y+h))))
+			
+		gray := image.NewGray(subimg.Bounds())
+		draw.Draw(gray, gray.Bounds(), subimg, subimg.Bounds().Min, draw.Src) //原始图片转换为灰色图片
+		fmt.Println(gray)
 		arr := ana.ConvertoLine(gray)
-
 		arr2 := make([]string, gray.Rect.Size().Y, gray.Rect.Size().Y)
 		maxx := gray.Rect.Size().X
 		maxy := gray.Rect.Size().Y
+		fmt.Println(maxx,maxy)
 		for y := 0; y < maxy; y++ {
 			temp := ""
 			for x := 0; x < maxx; x++ {
-				temp += strconv.Itoa(int(gray.GrayAt(x, y).Y)) + ","
+				temp += strconv.Itoa(int(gray.Pix[maxx*y+x])) + ","
 			}
 			arr2[y] = temp
 		}
 
 		path, _ := filepath.Rel(basedir, savepath)                                 //相对路径
-		c.JSON(200, gin.H{"datas": arr, "all": arr2, "path": "../webapi/" + path}) // {data:ret[0]}}).String(200, "webapi/"+path)
+		c.JSON(200, gin.H{"datas": arr, "all": arr2,"sub":ana.ImgToBase64(&subimg), "path": "../webapi/" + path}) // {data:ret[0]}}).String(200, "webapi/"+path)
 	})
 
 	r.GET("/record/list/:type/:page", func(c *gin.Context) {
 		page := c.Param("page")
-		user := c.Param("user")
-		role := c.Param("role")
+		user,_ := c.GetQuery("user")
+		role,_ := c.GetQuery("role")
 		ty:=c.Param("type")
-
+		fmt.Println(page,user,role,ty)
 		idx, err := strconv.Atoi(page)
 		if err != nil {
 			c.JSON(200, gin.H{"code": 1, "data": err})

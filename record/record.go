@@ -1,7 +1,7 @@
 package record
 
 import (
-	. "github.com/qshuai162/MivdApi/common/config"
+	. "github.com/qshuai162/common/config"
 	// "fmt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -56,7 +56,7 @@ func GetList(pageIdx, pageSize int, user, role,ty string) (records []Record) {
 	if role != "user" {
 		col.Find(bson.M{"type":ty}).Sort("-$natural").Skip((pageIdx - 1) * pageSize).Limit(pageSize).All(&records)
 	} else {
-		col.Find(bson.M{"operator": user,"type":ty}).Sort("-$natural").Skip((pageIdx - 1) * pageSize).Limit(pageSize).All(&records)
+		col.Find(bson.M{"username": user,"type":ty}).Sort("-$natural").Skip((pageIdx - 1) * pageSize).Limit(pageSize).All(&records)
 	}
 
 	return

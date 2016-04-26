@@ -11,21 +11,17 @@ import (
 	"math"
 )
 
-func TestPH(img *image.Image) int {
+func TestPH(img *image.Image) float64 {
 	width := 30 //截图区域大小，毫米坐标系
 	length := 125.4
 	x := []int{5, 12, 19, 26} //phcolor7  毫米坐标系，每个色块最中心点的坐标
 	y := []int{3, 11, 18, 25, 33, 41, 48, 56, 78, 85, 93, 100, 108, 115, 123, 63}
-	xaxis, yaxis := coordinatesConvert(img, x, y, width, length)
-	phMATRIX := colorfunc(img, xaxis, yaxis) //得到颜色矩阵
-	slice := make([]int, 0)
-	slice = phMATRIX[15]
-	arrDisMax := make([]float64, 0)
-	for i := 0; i < 15; i++ {
-		arrDisMax = append(arrDisMax, rbgDisMax(phMATRIX[i], slice))
-	}
-	// fmt.Println("单色块颜色距离法判断  PH值为：", pHDisJudge(arrDisMax))
-	return pHDisJudge(arrDisMax)
+	
+	xaxis, yaxis := coordinatesConvert(img,x, y, width, length)
+	phMATRIX := colorfunc(img,xaxis, yaxis) //得到颜色矩阵
+	slice := phMATRIX[15]
+
+	return rbgDisMax(phMATRIX, slice)
 }
 
 //每个PH值四个方块的颜色值切片
@@ -92,25 +88,50 @@ func rgbDistance(phControl []int, phTest []int) float64 {
 	return sumDis
 }
 
-//颜色相似度算法三：PH中单个方块最大距离，最小者为目标PH值
-//此方法最优
-func rbgDisMax(phControl []int, phTest []int) float64 {
-	DisMax := 0.0
-	for i := 0; i < len(phControl); {
-		Dis := 0.0
-		Dis += math.Pow(float64(phControl[i]-phTest[i]), 2)
-		Dis += math.Pow(float64(phControl[i+1]-phTest[i+1]), 2)
-		Dis += math.Pow(float64(phControl[i+2]-phTest[i+2]), 2)
-		Dis = math.Sqrt(Dis)
-		// fmt.Println(phControl[i:i+3], phTest[i:i+3])
-		// fmt.Println(Dis)
-		if Dis > DisMax {
-			DisMax = Dis
+//颜色相似度算法三：距离最小者为目标值
+func rbgDisMax(phControl [][]int, phTest []int) float64 {
+	arrDisMax := make([]float64, 0)
+	for j := 0; j < 15; j++ {
+		DisMax := 0.0
+		for i := 0; i < len(phControl[j]); {
+			Dis := 0.0
+			Dis += math.Pow(float64(phControl[j][i]-phTest[i]), 2)
+			Dis += math.Pow(float64(phControl[j][i+1]-phTest[i+1]), 2)
+			Dis += math.Pow(float64(phControl[j][i+2]-phTest[i+2]), 2)
+			Dis = math.Sqrt(Dis)
+			if Dis > DisMax {
+				DisMax = Dis
+			}
+			i += 3
 		}
-		i += 3
+		arrDisMax = append(arrDisMax, DisMax)
 	}
-	// fmt.Println(DisMax)
-	return DisMax
+	var phVal, phvaltest int
+	k := arrDisMax[0]
+	for i := 0; i < len(arrDisMax)-1; i++ {
+		if k > arrDisMax[i+1] {
+			k = arrDisMax[i+1]
+			phVal = i + 1
+		}
+	}
+	disMintest := arrDisMax[0]
+	for i := 0; i < len(arrDisMax)-1; i++ {
+		if disMintest > arrDisMax[i] && arrDisMax[i] > k+5 {
+			disMintest = arrDisMax[i]
+			phvaltest = i
+		}
+	}
+	var phResult float64
+	if 14-phvaltest > 14-phVal {
+		phResult = float64(14-phVal) + arrDisMax[phVal]/(arrDisMax[phVal]+arrDisMax[phvaltest])
+	}
+	if 14-phvaltest < 14-phVal {
+		phResult = float64(14-phVal) - arrDisMax[phVal]/(arrDisMax[phVal]+arrDisMax[phvaltest])
+	}
+
+	phResult = math.Trunc(phResult*1e1+0.5) * 1e-1 //四舍五入，只保留一位小数
+
+	return phResult
 
 }
 
