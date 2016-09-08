@@ -13,9 +13,9 @@ func Test_Add(t *testing.T) {
 	re.ResultMsg = strconv.Itoa(5)
 
 	// re.Operator = "tester"
-	re.PicData = ""
-	re.AreaData = ""
+	re.PhotoPath = ""
+	re.AreaPath = ""
 	re.LotNo = "0"
-	re.Date = time.Now().Unix()
+	re.DateTime = time.Now().Unix()
 	re.Save()
 }

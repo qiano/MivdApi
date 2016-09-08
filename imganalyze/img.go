@@ -11,6 +11,7 @@ import (
 	"image/png"
 	"os"
 	"path/filepath"
+	"math"
 )
 
 //图像解码
@@ -85,6 +86,20 @@ func ImgCut(img *image.Image, x0, y0, x1, y1 int) image.Image {
 	draw.Draw(gray, gray.Bounds(), *img, (*img).Bounds().Min, draw.Src)
 	rect := image.Rect(x0, y0, x1, y1)
 	subimg := gray.SubImage(rect)
+	return subimg
+}
+
+func ImgCutByRate(img *image.Image, x, y, w, h float64) image.Image {
+	pic := image.NewRGBA((*img).Bounds())
+	draw.Draw(pic, pic.Bounds(), *img, (*img).Bounds().Min, draw.Src)
+	mx:=float64(pic.Bounds().Max.X)
+	my:=float64(pic.Bounds().Max.Y)
+	x0:=int(math.Ceil(mx*x))
+	y0:=int(math.Ceil(my*y))
+	x1:=int(math.Floor(float64(x0)+mx*w))
+	y1:=int(math.Floor(float64(y0)+my*h))
+	rect := image.Rect(x0, y0, x1, y1)
+	subimg := pic.SubImage(rect)
 	return subimg
 }
 

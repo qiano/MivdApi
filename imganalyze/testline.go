@@ -107,6 +107,22 @@ func ConvertoLine(gray *image.Gray) *[]float64 {
 	return &arr
 }
 
+//转换中间部分数据为线数组
+func ConverParttoLine(gray *image.Gray,rate float64) *[]float64 {
+	arr := make([]float64, 0, gray.Rect.Size().Y)
+	minx:=int(math.Ceil((1-rate)/2*float64(gray.Rect.Size().X)))
+	maxx := int(math.Floor((1+rate)/2*float64(gray.Rect.Size().X)))
+	maxy := gray.Rect.Size().Y
+	for y := 0; y < maxy; y++ {
+		xsum := 0
+		for x := minx; x < maxx; x++ {
+			xsum += int(gray.Pix[gray.Rect.Size().X*y+x])
+		}
+		arr = append(arr, float64(xsum)/float64(maxx-minx))
+	}
+	return &arr
+}
+
 //查找灰度值最小的线
 func FindMinValInLines(arr *[]float64) (val float64, idx int) {
 	for i, v := range *arr {

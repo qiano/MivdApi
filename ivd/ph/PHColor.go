@@ -5,13 +5,20 @@
 package ph
 
 import (
-	// "fmt"
+	"fmt"
 	"image"
 	"image/draw"
-	"math"
+	"math"	
+	"github.com/qshuai162/MivdApi/imganalyze"
+
 )
 
-func TestPH(img *image.Image) float64 {
+func Test(picpath string) float64 {
+	fmt.Println(picpath)
+	img := imganalyze.DecodeImg(picpath)
+    gray := image.NewRGBA((*img).Bounds())
+	draw.Draw(gray, gray.Bounds(), *img, (*img).Bounds().Min, draw.Src) //原始图片转换为灰色图片
+	
 	width := 30 //截图区域大小，毫米坐标系
 	length := 125.4
 	x := []int{5, 12, 19, 26} //phcolor7  毫米坐标系，每个色块最中心点的坐标
