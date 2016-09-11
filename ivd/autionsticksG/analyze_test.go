@@ -7,5 +7,5 @@ import (
 )
 
 func TestTest(t *testing.T) {
-      	println(Test("1.jpg","","","","","",4,9).Result)
+      	println(AutionsticksG("1.jpg"))
 }

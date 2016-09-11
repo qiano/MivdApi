@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/sessions"
 	ana "github.com/qshuai162/MivdApi/imganalyze"
-	// "github.com/qshuai162/MivdApi/ivd/autionsticks"
+	 "github.com/qshuai162/MivdApi/ivd/autionsticksG"
 	"github.com/qshuai162/MivdApi/ivd/ph"
 	"github.com/qshuai162/MivdApi/ivd/qualitative"
 	"github.com/qshuai162/MivdApi/record"
@@ -183,7 +183,6 @@ func main() {
 		py,_:=strconv.ParseFloat(c.PostForm("py"),64)
 		pwidth,_:=strconv.ParseFloat(c.PostForm("pwidth"),64)
 		pheight,_:=strconv.ParseFloat(c.PostForm("pheight"),64)
-		
 		projects:=c.PostForm("projects")
 		ps:=strings.Split(projects,"|")
 		// for i:=0;i<len(ps);i++{
@@ -209,10 +208,11 @@ func main() {
 			c.JSON(200, gin.H{"code": 0, "data": record, "msg": ""})  
 			break
 		case "Autionsticks":
-			// re := autionsticks.Do(photopath,plantpath,hotpath,vendor, user,location,lat,long)
-			// re.Save()
-			// c.JSON(200, gin.H{"code": 0, "data": re, "msg": ""})
-			break                
+			re := autionsticksG.AutionsticksG(util.GetCurrDir()+plantpath)
+			record.Result=strings.Join(re,",")
+			record.Save()
+			c.JSON(200, gin.H{"code": 0, "data": record, "msg": ""})
+			break               
 		case "Qualitative":
 		    hpaths:=strings.Split(hotpath,"|") 
 			for i:=0;i<len(ps);i++{
@@ -234,7 +234,7 @@ func main() {
 					record.Result+=" "
 				}
 			}
-				record.Save()  
+			record.Save()  
 			c.JSON(200,gin.H{"code":0,"data":record,"msg":""})
 			break	
 		default:

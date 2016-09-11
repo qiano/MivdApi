@@ -1,12 +1,16 @@
 package autionsticksG
 import (
-	// "fmt"
+	 "fmt"
 	"image"
 	"image/draw"
 	"math"
+	 "github.com/qshuai162/MivdApi/imganalyze"
 )
 
-func AutionsticksG(img *image.Image) []string {
+func AutionsticksG(picpath string) []string {
+	fmt.Println(picpath)
+	img := imganalyze.DecodeImg(picpath)
+	fmt.Println(img)
 	width := 55  //截图区域大小，毫米坐标系  X坐标
 	length := 91 // Y坐标
 	// 最后是测试项坐标                                                      //AutionSticks  毫米坐标系，每个色块最中心点的坐标
@@ -18,154 +22,156 @@ func AutionsticksG(img *image.Image) []string {
 
 func test(img *image.Image, x, y []float64, width, length int) []string {
 	xaxis, yaxis := coordinatesConvertAution(img, x, y, width, length)
-	phMATRIX := colorfuncAution(img, xaxis, yaxis) //得到颜色矩阵
+	phMATRIX := colorfuncAution(img, xaxis, yaxis) //得到颜色矩
+	fmt.Println(phMATRIX)
 	var testResult = make([]string, 0)
 		switch rbgDisMaxAution(phMATRIX[0]) { //胆红素
 	case 0:
 		// fmt.Println("胆红素：neg.")
-		testResult = append(testResult, "胆红素：", "neg.")
+		testResult = append(testResult, "胆红素：neg.")
 	case 1:
 		// fmt.Println("胆红素：1+（0.5）mg/dL")
-		testResult = append(testResult, "胆红素：", "+")
+		testResult = append(testResult, "胆红素：+")
 	case 2:
 		// fmt.Println("胆红素：2+（2）mg/dL")
-		testResult = append(testResult, "胆红素：", "++")
+		testResult = append(testResult, "胆红素：++")
 	case 3:
 		// fmt.Println("胆红素：3+（6）mg/dL")
-		testResult = append(testResult, "胆红素：", "+++")
+		testResult = append(testResult, "胆红素：+++")
 	default:
 		// fmt.Println("胆红素：Default")
-		testResult = append(testResult, "胆红素：", "Default")
+		testResult = append(testResult, "胆红素：Default")
 	}
 
-	ndy := []string{"normal", "2 (35)mg/dL(umol/l)", "4 (70)mg/dL(umol/l)", "8 (140)mg/dL(umol/l)", "12(200)mg/dL(umol/l)", "Default"}
-	testResult = append(testResult, "尿胆原：", ndy[rbgDisMaxAution(phMATRIX[1])])
+	ndy := []string{"normal", "2 (35)mg/dL(umol/l)", "4 (70)mg/dL(umol/l)", "8 (140)mg/dL(umol/l)", "12(200)mg/dL(umol/l)", "Default", "Default", "Default"}
+	testResult = append(testResult, "尿胆原："+ndy[rbgDisMaxAution(phMATRIX[1])])
 
 	switch rbgDisMaxAution(phMATRIX[2]) { // 酮体
 	case 0:
 		// fmt.Println("酮体：neg.")
-		testResult = append(testResult, "酮体：", "neg.")
+		testResult = append(testResult, "酮体：neg.")
 	case 1:
 		// fmt.Println("酮体：正负")
-		testResult = append(testResult, "酮体：", "trace")
+		testResult = append(testResult, "酮体：trace")
 	case 2:
 		// fmt.Println("酮体：1+(15)mg/dL")
-		testResult = append(testResult, "酮体：", "+")
+		testResult = append(testResult, "酮体：+")
 	case 3:
 		// fmt.Println("酮体：2+(40)mg/dL")
-		testResult = append(testResult, "酮体：", "++")
+		testResult = append(testResult, "酮体：++")
 	case 4:
 		// fmt.Println("酮体：3+(80)mg/dL")
-		testResult = append(testResult, "酮体：", "+++")
+		testResult = append(testResult, "酮体：+++")
 	default:
 		// fmt.Println("酮体：Default")
-		testResult = append(testResult, "酮体：", "Default")
+		testResult = append(testResult, "酮体：Default")
 	}
 
 	switch rbgDisMaxAution(phMATRIX[3]) { // 维生素C
 	case 0:
 		// fmt.Println("维生素C：10 mg/dL")
-		testResult = append(testResult, "维生素C：", "neg.")
+		testResult = append(testResult, "维生素C：neg.")
 	case 1:
 		// fmt.Println("维生素C：50 mg/dL")
-		testResult = append(testResult, "维生素C：", "+")
+		testResult = append(testResult, "维生素C：+")
 	case 2:
 		// fmt.Println("维生素C：100 mg/dL")
-		testResult = append(testResult, "维生素C：", "++")
+		testResult = append(testResult, "维生素C：++")
 	default:
 		// fmt.Println("维生素C：Default")
-		testResult = append(testResult, "维生素C：", "Default")
+		testResult = append(testResult, "维生素C：Default")
 	}
 
-	ptt := []string{"norm.", "50(2,8)mg/dL(nmol/l)", "100(5,6)mg/dL(nmol/l)", "250(14)mg/dL(nmol/l)", "500(28)mg/dL(nmol/l)", ">=1000(56)mg/dL(nmol/l)", "Default"}
-	testResult = append(testResult, "葡萄糖：", ptt[rbgDisMaxAution(phMATRIX[4])])
+	ptt := []string{"norm.", "50(2,8)mg/dL(nmol/l)", "100(5,6)mg/dL(nmol/l)", "250(14)mg/dL(nmol/l)", "500(28)mg/dL(nmol/l)", ">=1000(56)mg/dL(nmol/l)", "Default", "Default"}
+	testResult = append(testResult, "葡萄糖："+ptt[rbgDisMaxAution(phMATRIX[4])])
 
-	dbz := []string{"neg.", "trace", "30mg/dL", "100mg/dL", "500mg/dL", "Default"}
-	testResult = append(testResult, "蛋白质：", dbz[rbgDisMaxAution(phMATRIX[5])])
+	dbz := []string{"neg.", "trace", "30mg/dL", "100mg/dL", "500mg/dL", "Default", "Default", "Default"}
+	fmt.Println(rbgDisMaxAution(phMATRIX[5]))
+	testResult = append(testResult, "蛋白质："+dbz[rbgDisMaxAution(phMATRIX[5])])
 
 	switch BloodcolorfuncAution(img,xaxis, yaxis, width, length) { //红细胞
 	case 0:
 		// fmt.Println("红细胞：neg.")
-		testResult = append(testResult, "红细胞：", "neg.")
+		testResult = append(testResult, "红细胞：neg.")
 	case 1:
 		// fmt.Println("红细胞：1+（0.06）mg/dL")
-		testResult = append(testResult, "红细胞：", "+ca.5-10 Ery/ul")
+		testResult = append(testResult, "红细胞：+ca.5-10 Ery/ul")
 	case 2:
 		// fmt.Println("红细胞：2+（0.2）mg/dL")
-		testResult = append(testResult, "红细胞：", "++ca.50 Ery/ul")
+		testResult = append(testResult, "红细胞：++ca.50 Ery/ul")
 	case 3:
 		// fmt.Println("红细胞：3+（1.0）mg/dL")
-		testResult = append(testResult, "红细胞：", "+++ca.300 Ery/ul")
+		testResult = append(testResult, "红细胞：+++ca.300 Ery/ul")
 	case 4:
 		// fmt.Println("红细胞：Non Hemolysis 1+ mg/dL")
-		testResult = append(testResult, "红细胞：", "ca.5~10 Ery/ul")
+		testResult = append(testResult, "红细胞：ca.5~10 Ery/ul")
 	case 5:
 		// fmt.Println("红细胞：2+ mg/dL")
-		testResult = append(testResult, "红细胞：", "ca.50 Ery/ul")
+		testResult = append(testResult, "红细胞：ca.50 Ery/ul")
 	case 6:
 		// fmt.Println("红细胞：2+ mg/dL")
-		testResult = append(testResult, "红细胞：", "ca.300 Ery/ul")
+		testResult = append(testResult, "红细胞：ca.300 Ery/ul")
 	}
 
 	switch rbgDisMaxAution(phMATRIX[7]) { // PH
 	case 0:
 		// fmt.Println("PH ：5")
-		testResult = append(testResult, "PH ：", "5")
+		testResult = append(testResult, "PH ：5")
 	case 1:
 		// fmt.Println("PH ：6")
-		testResult = append(testResult, "PH ：", "6")
+		testResult = append(testResult, "PH ：6")
 	case 2:
 		// fmt.Println("PH ：6")
-		testResult = append(testResult, "PH ：", "6.5")
+		testResult = append(testResult, "PH ：6.5")
 	case 3:
 		// fmt.Println("PH ：7")
-		testResult = append(testResult, "PH ：", "7")
+		testResult = append(testResult, "PH ：7")
 	case 4:
 		// fmt.Println("PH ：8")
-		testResult = append(testResult, "PH ：", "8")
+		testResult = append(testResult, "PH ：8")
 	case 5:
 		// fmt.Println("PH ：9")
-		testResult = append(testResult, "PH ：", "9")
+		testResult = append(testResult, "PH ：9")
 	default:
 		// fmt.Println("PH ：Default")
-		testResult = append(testResult, "PH ：", "Default")
+		testResult = append(testResult, "PH ：Default")
 	}
 
 	switch rbgDisMaxAution(phMATRIX[8]) { //亚硝酸盐
 	case 0:
 		// fmt.Println("亚硝酸盐：neg.")
-		testResult = append(testResult, "亚硝酸盐：", "neg.")
+		testResult = append(testResult, "亚硝酸盐：neg.")
 	case 1:
 		// fmt.Println("亚硝酸盐：1+")
-		testResult = append(testResult, "亚硝酸盐：", "pink")
+		testResult = append(testResult, "亚硝酸盐：pink")
 	case 2:
 		// fmt.Println("亚硝酸盐：2+")
-		testResult = append(testResult, "亚硝酸盐：", "rose")
+		testResult = append(testResult, "亚硝酸盐：rose")
 	default:
 		// fmt.Println("亚硝酸盐：Default")
-		testResult = append(testResult, "亚硝酸盐：", "Default")
+		testResult = append(testResult, "亚硝酸盐：Default")
 	}
 
 	switch rbgDisMaxAution(phMATRIX[9]) { //白细胞
 	case 0:
 		// fmt.Println("白细胞：neg.")
-		testResult = append(testResult, "白细胞：", "neg.")
+		testResult = append(testResult, "白细胞：neg.")
 	case 1:
 		// fmt.Println("白细胞：25 Leu/uL")
-		testResult = append(testResult, "白细胞：", "ca.25 Leuko/uL")
+		testResult = append(testResult, "白细胞：ca.25 Leuko/uL")
 	case 2:
 		// fmt.Println("白细胞：75 Leu/uL")
-		testResult = append(testResult, "白细胞：", "ca.75 Leuko/uL")
+		testResult = append(testResult, "白细胞：ca.75 Leuko/uL")
 	case 3:
 		// fmt.Println("白细胞：500 Leu/uL")
-		testResult = append(testResult, "白细胞：", "ca.500 Leuko/uL")
+		testResult = append(testResult, "白细胞：ca.500 Leuko/uL")
 	default:
 		// fmt.Println("白细胞：Default")
-		testResult = append(testResult, "白细胞：", "Default")
+		testResult = append(testResult, "白细胞：Default")
 	}
 
-	gravity := []string{"1.000", "1.005", "1.010", "1.015", "1.020", "1.025", "1.030"}
-	testResult = append(testResult, "比重：", gravity[rbgDisMaxAution(phMATRIX[10])])
+	gravity := []string{"1.000", "1.005", "1.010", "1.015", "1.020", "1.025", "1.030", "Default"}
+	testResult = append(testResult, "比重："+gravity[rbgDisMaxAution(phMATRIX[10])])
 	return testResult
 }
 
