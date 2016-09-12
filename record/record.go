@@ -30,6 +30,7 @@ type Record struct {
 	PatientName string //病人姓名
 	PatientNo string //病人编号
 	QrCode    string   //二维码
+	GrayVal   float64
 }
 
 var mongodbstr = Config["mongodbHost"]

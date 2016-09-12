@@ -117,3 +117,5 @@ func ImgToBase64(img *image.Image) string {
 	base64.StdEncoding.Encode(dist, emptyBuff.Bytes()) //buff转成base64
 	return string(dist)
 }
+
+

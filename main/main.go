@@ -220,12 +220,16 @@ func main() {
 				hwidthmm,_:=strconv.Atoi(params[6])
 				cdis,_:=strconv.Atoi(params[4])
 				tdis,_:=strconv.Atoi(params[5])
-				isvalid,result:=qualitative.Test(util.GetCurrDir()+hpaths[i],hwidthmm,cdis,tdis)
+				white,balck:=qualitative.BWValue(util.GetCurrDir()+photopath)
+				isvalid,result,grayval:=qualitative.Test(util.GetCurrDir()+hpaths[i],hwidthmm,cdis,tdis,white,balck)
 				if isvalid{
 					if result{
 						record.Result+="+"
 					} else{
 						record.Result+="-"
+					}
+					if(grayval>=0){
+						record.GrayVal=grayval
 					}
 				}else{
 					record.Result+="Invalid"

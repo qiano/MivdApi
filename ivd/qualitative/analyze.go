@@ -8,7 +8,7 @@ import (
     // "fmt"
 )
 
-func Test(picpath string,hotWidth,cdis,tdis int) (bool,bool){
+func Test(picpath string,hotWidth,cdis,tdis int,white,black int) (bool,bool,float64){
     img := imganalyze.DecodeImg(picpath)
     gray := image.NewGray((*img).Bounds())
 	draw.Draw(gray, gray.Bounds(), *img, (*img).Bounds().Min, draw.Src) //原始图片转换为灰色图片
@@ -29,10 +29,21 @@ func Test(picpath string,hotWidth,cdis,tdis int) (bool,bool){
     
     //计算除C T线区域外的灰度平均值
     avg:=imganalyze.CalcRangeAvg(arr,cmax,tmin)
+    tl:=(float64((white-black))/255.0)*tval+float64(black)
     //c线是否存在
     if avg-cval<10{
-        return false,false
+        return false,false,tl
     }
-    return true,(avg-tval) / (avg - cval) > 0.15;
+
+    return true,(avg-tval) / (avg - cval) > 0.15,tl;
 }
 
+
+func BWValue(picpath string)(int,int){
+    img := imganalyze.DecodeImg(picpath)
+    gray := image.NewGray((*img).Bounds())
+	draw.Draw(gray, gray.Bounds(), *img, (*img).Bounds().Min, draw.Src) //原始图片转换为灰色图片
+    black,_,_:=imganalyze.FindMinGray(gray)
+    white,_,_:=imganalyze.FindMaxGray(gray)
+    return white,black
+}
