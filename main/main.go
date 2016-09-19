@@ -185,18 +185,6 @@ func main() {
 		pheight,_:=strconv.ParseFloat(c.PostForm("pheight"),64)
 		projects:=c.PostForm("projects")
 		ps:=strings.Split(projects,"|")
-		// for i:=0;i<len(ps);i++{
-			
-		// }
-		
-		// hx,_:=strconv.ParseFloat(c.PostForm("hx"),64)
-		// hy,_:=strconv.ParseFloat(c.PostForm("hy"),64)
-		// hwidth,_:=strconv.ParseFloat(c.PostForm("hwidth"),64)
-		// hheight,_:=strconv.ParseFloat(c.PostForm("hheight"),64)
-		// hWidthMm,_:=strconv.Atoi(c.PostForm("hWidthMm"))
-		// cDis,_:=strconv.Atoi(c.PostForm("cdis"))
-		// tDis,_:=strconv.Atoi(c.PostForm("tdis"))
-		
 		
 		photopath,plantpath,hotpath:=savePictures(vendor,operator,Type,imgbase,px,py,pwidth,pheight,ps)
 		record:=record.NewRecord(qrcode,photopath,plantpath,hotpath,vendor,Type,project,operator,location,lat,long,lotno,index,pname,pno)
@@ -207,7 +195,7 @@ func main() {
 			record.Save()
 			c.JSON(200, gin.H{"code": 0, "data": record, "msg": ""})  
 			break
-		case "Autionsticks":
+		case "Combi":
 			re := autionsticksG.AutionsticksG(util.GetCurrDir()+plantpath)
 			record.Result=strings.Join(re,",")
 			record.Save()
@@ -217,19 +205,33 @@ func main() {
 		    hpaths:=strings.Split(hotpath,"|") 
 			for i:=0;i<len(ps);i++{
 				params:=strings.Split(ps[i],",")
-				hwidthmm,_:=strconv.Atoi(params[6])
+				plen:=len(params)
+				hwidthmm,_:=strconv.Atoi(params[plen-1])
 				cdis,_:=strconv.Atoi(params[4])
-				tdis,_:=strconv.Atoi(params[5])
-				white,balck:=qualitative.BWValue(util.GetCurrDir()+photopath)
-				isvalid,result,grayval:=qualitative.Test(util.GetCurrDir()+hpaths[i],hwidthmm,cdis,tdis,white,balck)
+				tdis:=make([]int,0,0)
+				for j:=5;j<plen-2;j++{
+				 temp,_:=strconv.Atoi(params[5])
+				 tdis=append(tdis,temp)
+				}
+				
+				white,black:=qualitative.BWValue(util.GetCurrDir()+photopath)
+				isvalid,judges,grays:=qualitative.Test(util.GetCurrDir()+hpaths[i],hwidthmm,cdis,tdis,white,black)
 				if isvalid{
-					if result{
-						record.Result+="+"
-					} else{
-						record.Result+="-"
+					for k:=0;k<len(judges);k++{
+						if judges[k]{
+							record.Result+="+"
+						}else{
+							record.Result+="-"
+						}
+						if k<len(judges)-1{
+							record.Result+=","
+						}
 					}
-					if(grayval>=0){
-						record.GrayVal=grayval
+					for k:=0;k<len(grays);k++{
+						record.GrayVal+=fmt.Sprintf("%.2f",grays[k]) 
+						if k<len(grays)-1{
+							record.Result+=","
+						}
 					}
 				}else{
 					record.Result+="Invalid"
