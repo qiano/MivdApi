@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <title>Upload Files using XMLHttpRequest - Minimal</title>
+    <script src="js/Chart.min.js"> </script>
+    <script type="text/javascript">
+      function fileSelected() {
+        var file = document.getElementById('fileToUpload').files[0];
+        if (file) {
+          var fileSize = 0;
+          if (file.size > 1024 * 1024)
+            fileSize = (Math.round(file.size * 100 / (1024 * 1024)) / 100).toString() + 'MB';
+          else
+            fileSize = (Math.round(file.size * 100 / 1024) / 100).toString() + 'KB';
+          document.getElementById('fileName').innerHTML = 'Name: ' + file.name;
+          document.getElementById('fileSize').innerHTML = 'Size: ' + fileSize;
+          document.getElementById('fileType').innerHTML = 'Type: ' + file.type;
+        }
+      }
+      function uploadFile() {
+        var fd = new FormData();
+        fd.append("fileToUpload", document.getElementById('fileToUpload').files[0]);
+        var xhr = new XMLHttpRequest();
+        xhr.upload.addEventListener("progress", uploadProgress, false);
+        xhr.addEventListener("load", uploadComplete, false);
+        xhr.addEventListener("error", uploadFailed, false);
+        xhr.addEventListener("abort", uploadCanceled, false);
+        xhr.open("POST", "http://localhost:8888/findwb");//修改成自己的接口
+        xhr.send(fd);
+      }
+      function uploadProgress(evt) {
+        if (evt.lengthComputable) {
+          var percentComplete = Math.round(evt.loaded * 100 / evt.total);
+          document.getElementById('progressNumber').innerHTML = percentComplete.toString() + '%';
+        }
+        else {
+          document.getElementById('progressNumber').innerHTML = 'unable to compute';
+        }
+      }
+      function uploadComplete(evt) {
+
+        var ret=eval("("+evt.target.responseText+")")
+        document.getElementById("sourcepic").setAttribute("src",ret.path)
+        document.getElementById("lightvalw").innerHTML=ret.white
+        document.getElementById("lightvalb").innerHTML=ret.black
+        /* 服务器端返回响应时候触发event事件*/
+        //alert(evt.target.responseText);
+      }
+      function uploadFailed(evt) {
+        alert("There was an error attempting to upload the file.");
+      }
+      function uploadCanceled(evt) {
+        alert("The upload has been canceled by the user or the browser dropped the connection.");
+      }
+
+function fileSelected1() {
+        var file = document.getElementById('fileToUpload1').files[0];
+        if (file) {
+          var fileSize = 0;
+          if (file.size > 1024 * 1024)
+            fileSize = (Math.round(file.size * 100 / (1024 * 1024)) / 100).toString() + 'MB';
+          else
+            fileSize = (Math.round(file.size * 100 / 1024) / 100).toString() + 'KB';
+          document.getElementById('fileName1').innerHTML = 'Name: ' + file.name;
+          document.getElementById('fileSize1').innerHTML = 'Size: ' + fileSize;
+          document.getElementById('fileType1').innerHTML = 'Type: ' + file.type;
+        }
+      }
+      function uploadFile1() {
+        var fd = new FormData();
+        fd.append("fileToUpload1", document.getElementById('fileToUpload1').files[0]);
+        fd.append("x", document.getElementById('x').value);
+        fd.append("y", document.getElementById('y').value);
+        fd.append("w", document.getElementById('w').value);
+        fd.append("h", document.getElementById('h').value);
+        var xhr = new XMLHttpRequest();
+        xhr.addEventListener("load", uploadComplete1, false);
+        xhr.open("POST", "http://localhost:8765/getline");//修改成自己的接口
+        xhr.send(fd);
+      }
+function uploadComplete1(evt) {
+
+        var ret=eval("("+evt.target.responseText+")")
+        var len=ret.datas.length;
+        var str="";
+        var arr=[];
+        for(var i=1;i<=len;i++){
+          arr.push(i)
+          details=ret.all[i-1].split(",")
+          str+="<tr style='margin-bottom:3px;width:300px;height:20px;'><td style='width:30px;'>"+i+"</td> <td>"+ret.datas[i-1]+"</td><td style='width:30px;'></td>";
+          // for(var j=0;j<details.length;j++){
+          //   str+="<td style='width:30px;'>"+details[j]+"</td>";
+          // }
+          str+="</tr>";
+        }
+        document.getElementById('subimg').src="data:image/jpg;base64,"+ret.sub
+       var data = {
+      labels : arr,
+      datasets : [
+        {
+          fillColor : "rgba(220,220,220,0.5)",
+          strokeColor : "rgba(220,220,220,1)",
+          pointColor : "rgba(220,220,220,1)",
+          pointStrokeColor : "#fff",
+          data : ret.datas
+        }
+      ]
+    }
+    var ctx = document.getElementById("myChart").getContext("2d");
+    var lines=new Chart(ctx).Line(data);
+document.getElementById("details").innerHTML=str;
+
+
+
+}
+    </script>
+</head>
+<body>
+  <form id="form1" enctype="multipart/form-data" method="post" >
+    <div class="row">
+      <label for="fileToUpload">二维码图片上传</label><br />
+      <input type="file" name="fileToUpload" id="fileToUpload" onchange="fileSelected();"/>
+    </div>
+    <div id="fileName"></div>
+    <div id="fileSize"></div>
+    <div id="fileType"></div>
+    <div class="row">
+      <input type="button" onclick="uploadFile()" value="Upload" />
+    </div>
+    <div id="progressNumber"></div>
+  </form>
+  <p />
+  <p><span>白色：</span><span id="lightvalw"></span>  <span>黑色：</span><span id="lightvalb"></span></p>
+  <img id="sourcepic" />
+
+
+<div>
+   <form id="form2" enctype="multipart/form-data" method="post" >
+    <div class="row">
+      <div>
+        X:<input type="number" name="x" id="x" />
+        Y:<input type="number" name="y" id="y" />
+        W:<input type="number" name="w" id="w" />
+        H:<input type="number" name="h" id="h" />
+      </div>
+      <label for="fileToUpload">CT线图片上传</label><br />
+      <input type="file" name="fileToUpload" id="fileToUpload1" onchange="fileSelected1();"/>
+    </div>
+    <div id="fileName1"></div>
+    <div id="fileSize1"></div>
+    <div id="fileType1"></div>
+    <div class="row">
+      <input type="button" onclick="uploadFile1()" value="Upload" />
+    </div>
+    <img id="subimg" />
+    <div id="progressNumber"></div>
+  </form>
+  <div style="width:3000px;">
+<canvas id="myChart" width="3000" height="550"></canvas>
+<p>详细数据</p>
+<table id="details"></table>
+</div>
+</div>
+
+</body>
+</html>
