@@ -4,7 +4,7 @@ import (
 	"image"
 	"image/draw"
 	"math"
-	 "github.com/qshuai162/MivdApi/imganalyze"
+	 "github.com/qshuai162/MivdApi_Trail/imganalyze"
 )
 
 func AutionsticksG(picpath string) []string {

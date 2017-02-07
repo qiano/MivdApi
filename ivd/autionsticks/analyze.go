@@ -1,8 +1,8 @@
 package autionsticks
 
 import (
-	"github.com/qshuai162/MivdApi/imganalyze"
-	"github.com/qshuai162/MivdApi/record"
+	"github.com/qshuai162/MivdApi_Trail/imganalyze"
+	"github.com/qshuai162/MivdApi_Trail/record"
 	"strconv"
 	"strings"
 	"time"

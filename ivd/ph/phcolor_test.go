@@ -2,7 +2,7 @@ package ph
 
 import (
 	"fmt"
-	"github.com/qshuai162/MivdApi/imganalyze"
+	"github.com/qshuai162/MivdApi_Trail/imganalyze"
 	"testing"	
 
 )

@@ -1,7 +1,7 @@
 package qualitative
 
 import (
-	"github.com/qshuai162/MivdApi/imganalyze"
+	"github.com/qshuai162/MivdApi_Trail/imganalyze"
     "math"
     "image"
     "image/draw"
