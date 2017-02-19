@@ -351,7 +351,7 @@ func main() {
 		lat, _ := strconv.ParseFloat(c.PostForm("lat"), 64)
 		long, _ := strconv.ParseFloat(c.PostForm("long"), 64)
 		qr := c.PostForm("qrcode")
-		
+
 		result := track.AddTrackRecord(qr, operator, truename, location, lat, long)
 		c.JSON(200, gin.H{"code": 0, "data": result, "msg": ""})
 	})
@@ -359,8 +359,8 @@ func main() {
 	r.GET("/track/detail/:qrcode", func(c *gin.Context) {
 		qrcode := c.Param("qrcode")
 		entity := track.FindTrackEntity(qrcode)
-		records:=track.GetTrackRecordByQrCode(qrcode)
-		c.JSON(200, gin.H{"code": 0, "entity": entity,"records":records})
+		records := track.GetTrackRecordByQrCode(qrcode)
+		c.JSON(200, gin.H{"code": 0, "entity": entity, "records": records})
 	})
 
 	r.GET("/track/list/:page", func(c *gin.Context) {
@@ -374,6 +374,29 @@ func main() {
 		}
 		rs := track.GetList(idx, 20, user, role)
 		c.JSON(200, gin.H{"code": 0, "data": rs})
+	})
+
+	r.GET("/track/query", func(c *gin.Context) {
+		pageIndex, _ := c.GetQuery("pageIndex")
+		pageSize, _ := c.GetQuery("pageSize")
+		project, _ := c.GetQuery("project")
+		factory, _ := c.GetQuery("factory")
+		lotno, _ := c.GetQuery("lotno")
+		index, _ := c.GetQuery("index")
+		operator, _ := c.GetQuery("operator")
+		sort, _ := c.GetQuery("sort")
+		id, _ := c.GetQuery("id")
+		// fmt.Println(page, user, role, ty)
+		idx, err := strconv.Atoi(pageIndex)
+		size, _ := strconv.Atoi(pageSize)
+		idi, _ := strconv.Atoi(id)
+		if err != nil {
+			c.JSON(200, gin.H{"code": 1, "data": err})
+			return
+		}
+		total, rs := track.Query(idx, size, idi, project, factory, lotno, index, operator, sort)
+		c.JSON(200, gin.H{"code": 0, "total": total, "data": rs})
+
 	})
 
 	r.Run(":" + config.Config["port"])

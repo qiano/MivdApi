@@ -16,6 +16,7 @@ type TrackEntity struct {
 	LotNo   string //批号
 	Index   int    //序号
 	Project string //测试项目
+	Details []TrackRecord
 }
 
 //TrackRecord 追踪记录
@@ -93,7 +94,7 @@ func GetList(pageIdx, pageSize int, user, role string) (records []TrackEntity) {
 
 	col := session.DB(dbName).C(collectionName)
 	query := bson.M{}
-	
+
 	col.Find(query).Sort("-$natural").Skip((pageIdx - 1) * pageSize).Limit(pageSize).All(&records)
 	return
 }
@@ -140,111 +141,51 @@ func Exist(qr string) bool {
 }
 
 //Query website query
-// func Query(pageIdx, pageSize, id int, pname, pno, test, factory, lotno, result, location, operator, startdate, enddate, sort string) (total int, records []Record) {
-// 	session, err := mgo.Dial(mongodbstr)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	session.SetMode(mgo.Monotonic, true)
-// 	defer session.Close()
+func Query(pageIdx, pageSize, id int, project, factory, lotno, index, operator, sort string) (total int, records []TrackEntity) {
+	session, err := mgo.Dial(mongodbstr)
+	if err != nil {
+		panic(err)
+	}
+	session.SetMode(mgo.Monotonic, true)
+	defer session.Close()
 
-// 	col := session.DB(dbName).C(collectionName)
-// 	query := bson.M{}
-// 	// query := bson.M{"type": ty}
-// 	// if role == "user" {
-// 	// 	query["operator"] = user
-// 	// }
-// 	if id != 0 {
-// 		query["id"] = id
+	col := session.DB(dbName).C(collectionName)
+	query := bson.M{}
 
-// 	}
-// 	if pname != "" {
-// 		reg := bson.M{"$regex": pname, "$options": "i"}
-// 		query["patientname"] = reg
-// 	}
-// 	if pno != "" {
-// 		reg := bson.M{"$regex": pno, "$options": "i"}
-// 		query["patientno"] = reg
-// 	}
-// 	if test != "" {
-// 		reg := bson.M{"$regex": test, "$options": "i"}
-// 		query["project"] = reg
-// 	}
-// 	if factory != "" {
-// 		reg := bson.M{"$regex": factory, "$options": "i"}
-// 		query["vendor"] = reg
-// 	}
-// 	if lotno != "" {
-// 		reg := bson.M{"$regex": lotno, "$options": "i"}
-// 		query["lotno"] = reg
-// 	}
-// 	if result != "" {
-// 		reg := bson.M{"$regex": result, "$options": "i"}
-// 		query["result"] = reg
-// 	}
-// 	if location != "" {
-// 		reg := bson.M{"$regex": location, "$options": "i"}
-// 		query["location"] = reg
-// 	}
-// 	if operator != "" {
-// 		reg := bson.M{"$regex": operator, "$options": "i"}
-// 		query["operator"] = reg
-// 	}
+	if id != 0 {
+		query["id"] = id
+	}
+	if project != "" {
+		reg := bson.M{"$regex": project, "$options": "i"}
+		query["project"] = reg
+	}
 
-// 	if startdate != "" || enddate != "" {
-// 		start := (int64)(0)
-// 		end := (int64)(0)
-// 		if startdate != "" {
-// 			sStrs := strings.Split(startdate, "-")
-// 			y, _ := strconv.Atoi(sStrs[0])
-// 			m, _ := strconv.Atoi(sStrs[1])
-// 			d, _ := strconv.Atoi(sStrs[2])
-// 			start = time.Date(y, (time.Month)(m), d-1, 0, 0, 0, 0, time.Local).Unix()
-// 		}
-// 		if enddate != "" {
-// 			eStrs := strings.Split(enddate, "-")
-// 			y, _ := strconv.Atoi(eStrs[0])
-// 			m, _ := strconv.Atoi(eStrs[1])
-// 			d, _ := strconv.Atoi(eStrs[2])
-// 			end = time.Date(y, (time.Month)(m), d-1, 23, 59, 59, 999, time.Local).Unix()
-// 		}
-// 		fmt.Println(start, end)
-// 		if start > 0 && end > 0 {
-// 			var c = []bson.M{bson.M{"datetime": bson.M{"$gte": start}}, bson.M{"datetime": bson.M{"$lte": end}}}
-// 			query["$and"] = c
-// 		} else {
-// 			if start > 0 {
-// 				fmt.Println(start)
-// 				query["datetime"] = bson.M{"$gte": start}
-// 			}
-// 			if end > 0 {
-// 				fmt.Println(end)
-// 				query["datetime"] = bson.M{"$lte": end}
-// 			}
-// 		}
+	if factory != "" {
+		reg := bson.M{"$regex": factory, "$options": "i"}
+		query["vendor"] = reg
+	}
+	if lotno != "" {
+		reg := bson.M{"$regex": lotno, "$options": "i"}
+		query["lotno"] = reg
+	}
 
-// 		// var strs = strings.Split(date, "-")
-// 		// fmt.Println(strs)
-// 		// y, _ := strconv.Atoi(strs[0])
-// 		// m, _ := strconv.Atoi(strs[1])
-// 		// d, _ := strconv.Atoi(strs[2])
-// 		// start := time.Date(y, (time.Month)(m), d, 0, 0, 0, 0, time.Local).Unix()
-// 		// end := time.Date(y, (time.Month)(m), d, 23, 59, 59, 999, time.Local).Unix()
-// 		// var c = []bson.M{bson.M{"datetime": bson.M{"$gte": start}}, bson.M{"datetime": bson.M{"$lte": end}}}
-// 		// query["$and"] = c
-// 	}
+	if operator != "" {
+		reg := bson.M{"$regex": operator, "$options": "i"}
+		query["operator"] = reg
+	}
 
-// 	q := col.Find(query)
-// 	if sort != "" {
-// 		q = q.Sort(sort)
-// 	}
-// 	total, _ = q.Count()
-// 	q.Skip((pageIdx - 1) * pageSize).Limit(pageSize).All(&records)
+	q := col.Find(query)
+	if sort != "" {
+		q = q.Sort(sort)
+	}
+	total, _ = q.Count()
+	q.Skip((pageIdx - 1) * pageSize).Limit(pageSize).All(&records)
 
-// 	// if role != "user" {
-// 	// 	col.Find(bson.M{"type": ty}).Sort("-$natural").Skip((pageIdx - 1) * pageSize).Limit(pageSize).All(&records)
-// 	// } else {
-// 	// 	col.Find(bson.M{"operator": user, "type": ty}).Sort("-$natural").Skip((pageIdx - 1) * pageSize).Limit(pageSize).All(&records)
-// 	// }
-// 	return
-// }
+	for i := 0; i < len(records); i++ {
+		records[i].Details = make([]TrackRecord, 0, 0)
+		rcol := session.DB(dbName).C("trackrecord")
+		rcol.Find(bson.M{"qrcode": records[i].QrCode}).Sort("-$natural").All(&(records[i].Details))
+	}
+
+	return
+}

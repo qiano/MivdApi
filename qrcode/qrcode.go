@@ -3,7 +3,7 @@ package qrcode
 import "strings"
 
 var projectMaps = map[string]string{"HIV": "HIV", "MLR": "Malaria", "A1": "Combi", "EgP": "EgP", "HBs": "HBs"}
-var factoryMaps = map[string]string{"0001": "Factory1", "0002": "Factory2", "0004": "Factory4"}
+var factoryMaps = map[string]string{"0001": "Factory1", "0002": "Factory2", "0004": "NIPRD"}
 
 func substr(str string, start, length int) string {
 	rs := []rune(str)
