@@ -51,6 +51,7 @@ func CORSMiddleware() gin.HandlerFunc {
 func main() {
 	r := gin.Default()
 	r.Static("/images", "./images")
+	r.StaticFile("/mivdtrail_latest.apk","./files/mivdtrail_latest.apk")
 	r.Use(CORSMiddleware())
 
 	r.POST("/findwb", func(c *gin.Context) {
@@ -397,6 +398,10 @@ func main() {
 		total, rs := track.Query(idx, size, idi, project, factory, lotno, index, operator, sort)
 		c.JSON(200, gin.H{"code": 0, "total": total, "data": rs})
 
+	})
+
+	r.GET("/client/version", func(c *gin.Context) {
+		c.JSON(200, gin.H{"code":1,"data": config.Config["clientversion"]})
 	})
 
 	r.Run(":" + config.Config["port"])

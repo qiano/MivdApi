@@ -1,5 +1,6 @@
 {
-	"port":"8765",
-	"mongodbHost":"127.0.0.1:27017",
-	"mongodbDbName":"mivd_dev"
+	"port": "8765",
+	"mongodbHost": "127.0.0.1:27017",
+	"mongodbDbName": "mivd_dev",
+	"clientVersion": "1.02.0"
 }

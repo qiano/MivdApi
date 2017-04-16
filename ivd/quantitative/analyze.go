@@ -5,7 +5,7 @@ import (
     "math"
     "image"
     "image/draw"
-    // "fmt"
+    //  "fmt"
 )
 
 func Test(picpath string,hotWidth,cdis,tdis int) (bool,float64){

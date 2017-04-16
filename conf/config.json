@@ -1,5 +1,5 @@
 {
 	"port":"8765",
-	"mongodbHost":"127.0.0.1:27017",
-	"mongodbDbName":"mivd_dev"
+	"mongodbHost":"47.91.72.32:27017",
+	"mongodbDbName":"mivd_trail"
 }
